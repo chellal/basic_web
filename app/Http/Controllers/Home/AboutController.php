@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Intervention\Image\Facades\Image;
 
 use App\Http\Controllers\Controller;
+use App\Models\MultiImage;
+use Illuminate\Support\Carbon;
 
 class AboutController extends Controller
 {
@@ -22,8 +24,6 @@ class AboutController extends Controller
         if ($request->file('about_image')) {
             $image = $request->file('about_image');
             $name_gen = hexdec(uniqid()) . '.' . $image->getClientOriginalExtension();
-            // $resized_image = ImageManager::imagick()->read($image);
-            // $resized_image->resize(636, 852)->save('upload/home_about/' . $name_gen);
             Image::make($image)->resize(523, 605)->save('upload/home_about/' . $name_gen);
             $save_url = 'upload/home_about/' . $name_gen;
 
@@ -62,6 +62,31 @@ class AboutController extends Controller
     {
         $aboutPage = About::find(1);
         return view('frontend.about_page', compact('aboutPage'));
+    } //End Function
+
+    public function aboutMultiImage()
+    {
+        return view('admin.about_page.multimage');
+    } //End Function
+
+
+    public function storeMultiImage(Request $request)
+    {
+        $images = $request->file('multi_image');
+        foreach ($images as $image) {
+            $name_gen = hexdec(uniqid()) . '.' . $image->getClientOriginalExtension();
+            Image::make($image)->resize(220, 220)->save('upload/multi/' . $name_gen);
+            $save_url = 'upload/multi/' . $name_gen;
+            MultiImage::insert([
+                'multi_image' => $save_url,
+                'created_at' => Carbon::now(),
+            ]);
+        }
+        $notification = array(
+            'message' => 'Multi Image Inserted With Image Successfully',
+            'alert-type' => 'success'
+        );
+        return redirect()->back()->with($notification);
     } //End Function
 
 
